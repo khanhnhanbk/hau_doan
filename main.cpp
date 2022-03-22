@@ -25,14 +25,14 @@ struct myBST;
 // implementation
 struct Plane
 {
-    std::string id;
-    std::string type;
+    string id;
+    string type;
     int capacity;
 
     Flight *flights[MAX_SIZE];
     int numFlights;
 
-    Plane(std::string id, std::string type, int capacity)
+    Plane(string id, string type, int capacity)
     {
         this->id = id;
         this->type = type;
@@ -43,8 +43,8 @@ struct Plane
 
 struct FLight
 {
-    std::string id;
-    std::string arrivalAirport;
+    string id;
+    string arrivalAirport;
     Plane *plane;
     DateTime *departureTime;
 
@@ -54,19 +54,19 @@ struct FLight
 
 struct Ticket
 {
-    std::string id;
+    string id;
     Passenger *passenger;
     Flight *flight;
 };
 
 struct Passenger
 {
-    std::string id;
-    std::string firstName;
-    std::string lastName;
-    std::string gender;
+    string id;
+    string firstName;
+    string lastName;
+    string gender;
 
-    Passenger(std::string id, std::string firstName, std::string lastName, std::string gender)
+    Passenger(string id, string firstName, string lastName, string gender)
     {
         this->id = id;
         this->firstName = firstName;
@@ -245,7 +245,7 @@ struct myBST
             }
         }
     }
-    void removeById(std::string id)
+    void removeById(string id)
     {
         PassengerNode *current = root;
         while (current != NULL)
@@ -329,7 +329,7 @@ struct myBST
             }
         }
     }
-    Passenger *find(std::string id)
+    Passenger *find(string id)
     {
         PassengerNode *current = root;
         while (current != NULL)
@@ -593,8 +593,8 @@ void showMainMenu()
 }
 void addPlane()
 {
-    std::string id;
-    std::string type;
+    string id;
+    string type;
     int capacity;
     cout << "Enter plane id: ";
     cin >> id;
@@ -617,7 +617,7 @@ void displayPlane()
 void deletePlane()
 {
     displayPlane();
-    std::string id;
+    string id;
     cout << "Enter plane id: ";
     cin >> id;
     for (int i = 0; i < numPlanes; i++)
@@ -654,8 +654,8 @@ void loadFromFilePlane()
     {
         while (!fin.eof())
         {
-            std::string id;
-            std::string type;
+            string id;
+            string type;
             int capacity;
             fin >> id;
             fin >> type;
@@ -672,8 +672,8 @@ void loadFromFilePlane()
 }
 void modifyPlane()
 {
-    std::string id;
-    std::string type;
+    string id;
+    string type;
     int capacity;
     displayPlane();
     cout << "Enter plane id: ";
@@ -700,10 +700,10 @@ void addFlight()
 
 void addPassenger()
 {
-    std::string id;
-    std::string firstname;
-    std::string lastname;
-    std::string gender;
+    string id;
+    string firstname;
+    string lastname;
+    string gender;
     cout << "Enter id: ";
     cin >> id;
     cout << "Enter firstname";
