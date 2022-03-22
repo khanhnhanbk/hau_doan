@@ -11,9 +11,9 @@ struct Plane;
 struct DateTime;
 struct Flight
 {
-    int flight_number;
+    string flight_number;
     DateTime *departure_time;
-    int arrivalAirport;
+    string arrivalAirport;
     Plane *plane;
 };
 struct Ticket;
@@ -351,14 +351,39 @@ struct myBST
         if (current != NULL)
         {
             displayRec(current->left);
-            cout << current->passenger->id << " ";
+            cout << current->passenger->id << '\t' << current->passenger->firstName << '\t' << current->passenger->lastName << '\t' << current->passenger->gender << endl;
             displayRec(current->right);
         }
     }
     void display()
     {
+        cout << "Passenger List: " << endl;
+        cout << "ID\tfirsName\tlastName\tgender\n";
         displayRec(root);
     }
+    void save(string filename)
+    {
+        ofstream outfile;
+        outfile.open(filename);
+        saveRec(root, outfile);
+        outfile.close();
+    }
+    void saveRec(PassengerNode *current, ofstream &outfile)
+    {
+        if (current != NULL)
+        {
+            saveRec(current->left, outfile);
+            outfile << current->passenger->id << endl;
+            outfile << current->passenger->firstName << endl;
+            outfile << current->passenger->lastName << endl;
+            outfile << current->passenger->gender << endl;
+            saveRec(current->right, outfile);
+        }
+    }
+    // void load(string filename)
+    // {
+
+    // }
 
     ~myBST()
     {
@@ -443,6 +468,8 @@ void addTicket();
 void deleteTicket();
 void displayTicket();
 void modifyTicket();
+void saveToFileTicket();
+void loadFromFileTicket();
 // function for datetime
 
 // function for menu
@@ -459,9 +486,10 @@ int main()
     numPlanes = 0;
     loadFromFilePlane();
     numFlights = 0;
-
+    loadFromFileFlight();
     passengerInfoTree.root = NULL;
     loadFromFilePassenger();
+    loadFromFileTicket();
     // // menu
     showMainMenu();
     // addFlight();
@@ -638,6 +666,7 @@ void showMainMenu()
     } while (choice != 5);
     showMainMenu();
 }
+
 void addPlane()
 {
     string id;
@@ -768,17 +797,65 @@ void addFlight()
         if (planes[i]->id == planeId)
         {
             f->plane = planes[i];
+            planes[i]->flights[planes[i]->numFlights] = f;
+            planes[i]->numFlights++;
             break;
         }
+    }
+    if (f->plane == NULL)
+    {
+        cout << "Plane not found" << endl;
+        return;
     }
     flights[numFlights] = f;
     numFlights++;
 }
 void modifyFlight()
 {
+    displayFlight();
+    string flightNumber;
+    cout << "Enter flight number: ";
+    cin >> flightNumber;
+    // edit time
+    for (int i = 0; i < numFlights; i++)
+    {
+        if (flights[i]->flight_number == flightNumber)
+        {
+            cout << "Enter new departure time:\n";
+            cout << "Enter year: ";
+            cin >> flights[i]->departure_time->year;
+            cout << "Enter month: ";
+            cin >> flights[i]->departure_time->month;
+            cout << "Enter day: ";
+            cin >> flights[i]->departure_time->day;
+            cout << "Enter hour: ";
+            cin >> flights[i]->departure_time->hour;
+            cout << "Enter minute: ";
+            cin >> flights[i]->departure_time->minus;
+            return;
+        }
+    }
 }
 void deleteFlight()
 {
+    displayFlight();
+    string flightNumber;
+    cout << "Enter flight number: ";
+    cin >> flightNumber;
+    for (int i = 0; i < numFlights; i++)
+    {
+        if (flights[i]->flight_number == flightNumber)
+        {
+            delete flights[i];
+            for (int j = i; j < numFlights - 1; j++)
+            {
+                flights[j] = flights[j + 1];
+            }
+            numFlights--;
+            return;
+        }
+    }
+    cout << "Flight not found" << endl;
 }
 void displayFlight()
 {
@@ -791,9 +868,63 @@ void displayFlight()
 }
 void saveToFileFlight()
 {
+    ofstream fout;
+    fout.open("flight.txt");
+    for (int i = 0; i < numFlights - 1; i++)
+    {
+        fout << flights[i]->flight_number << endl;
+        fout << flights[i]->departure_time->year << endl;
+        fout << flights[i]->departure_time->month << endl;
+        fout << flights[i]->departure_time->day << endl;
+        fout << flights[i]->departure_time->hour << endl;
+        fout << flights[i]->departure_time->minus << endl;
+        fout << flights[i]->arrivalAirport << endl;
+        fout << flights[i]->plane->id << endl;
+    }
+    // save last flight
+    fout << flights[numFlights - 1]->flight_number << endl;
+    fout << flights[numFlights - 1]->departure_time->year << endl;
+    fout << flights[numFlights - 1]->departure_time->month << endl;
+    fout << flights[numFlights - 1]->departure_time->day << endl;
+    fout << flights[numFlights - 1]->departure_time->hour << endl;
+    fout << flights[numFlights - 1]->departure_time->minus << endl;
+    fout << flights[numFlights - 1]->arrivalAirport << endl;
+    fout << flights[numFlights - 1]->plane->id;
+    fout.close();
 }
 void loadFromFileFlight()
 {
+    ifstream fin("flight.txt");
+    if (fin.is_open())
+    {
+        while (!fin.eof())
+        {
+            Flight *f = new Flight();
+            f->departure_time = new DateTime();
+            string planeId;
+            fin >> f->flight_number;
+            fin >> f->departure_time->year;
+            fin >> f->departure_time->month;
+            fin >> f->departure_time->day;
+            fin >> f->departure_time->hour;
+            fin >> f->departure_time->minus;
+            fin >> f->arrivalAirport;
+            fin >> planeId;
+            for (int i = 0; i < numPlanes; i++)
+            {
+                if (planes[i]->id == planeId)
+                {
+                    f->plane = planes[i];
+                    planes[i]->flights[planes[i]->numFlights] = f;
+                    planes[i]->numFlights++;
+                    break;
+                }
+            }
+            flights[numFlights] = f;
+            numFlights++;
+        }
+        fin.close();
+    }
 }
 
 void addPassenger()
@@ -804,11 +935,11 @@ void addPassenger()
     string gender;
     cout << "Enter id: ";
     cin >> id;
-    cout << "Enter firstname";
+    cout << "Enter firstname: ";
     cin >> firstname;
-    cout << "Enter lastname";
+    cout << "Enter lastname: ";
     cin >> lastname;
-    cout << "Enter gender";
+    cout << "Enter gender: ";
     cin >> gender;
 
     Passenger *pas = new Passenger(id, firstname, lastname, gender);
@@ -820,13 +951,56 @@ void displayPassenger()
 }
 void saveToFilePassenger()
 {
+    passengerInfoTree.save("passenger.txt");
 }
 void loadFromFilePassenger()
 {
+    // load passenger
+    ifstream fin("passenger.txt");
+    if (fin.is_open())
+    {
+        while (!fin.eof())
+        {
+            string id;
+            string firstname;
+            string lastname;
+            string gender;
+
+            getline(fin, id);
+            if (id == "")
+                return;
+            getline(fin, firstname);
+            getline(fin, lastname);
+            getline(fin, gender);
+
+            Passenger *pas = new Passenger(id, firstname, lastname, gender);
+            passengerInfoTree.add(pas);
+        }
+        fin.close();
+    }
 }
 void deletePassenger()
 {
+    string id;
+    cout << "Enter id: ";
+    cin >> id;
+    passengerInfoTree.removeById(id);
 }
 void modifyPassenger()
 {
+    string id;
+    cout << "Enter id: ";
+    cin >> id;
+    Passenger *pas = passengerInfoTree.find(id);
+    if (pas == NULL)
+    {
+        cout << "Passenger not found" << endl;
+        return;
+    }
+    cout << "Enter new firstname: ";
+    cin >> pas->firstName;
+    cout << "Enter new lastname: ";
+    cin >> pas->lastName;
+    cout << "Enter new gender: ";
+    cin >> pas->gender;
 }
