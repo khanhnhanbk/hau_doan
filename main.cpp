@@ -9,14 +9,17 @@ const int MAX_SIZE = 100;
 // struct
 struct Plane;
 struct DateTime;
+struct Ticket;
 struct Flight
 {
     string flight_number;
     DateTime *departure_time;
     string arrivalAirport;
     Plane *plane;
+
+    Ticket *tickets[MAX_SIZE];
+    // int maxTickets;
 };
-struct Ticket;
 struct Passenger;
 
 // myBST for passenger info
@@ -44,9 +47,16 @@ struct Plane
 
 struct Ticket
 {
-    string id;
+    int id;
     Passenger *passenger;
     Flight *flight;
+
+    Ticket(int id, Passenger *passenger, Flight *flight)
+    {
+        this->id = id;
+        this->passenger = passenger;
+        this->flight = flight;
+    }
 };
 
 struct Passenger
@@ -436,6 +446,8 @@ int numPlanes;
 Flight *flights[MAX_SIZE];
 int numFlights;
 
+Ticket *tickets[MAX_SIZE];
+int numTickets;
 struct myBST passengerInfoTree;
 
 // function
@@ -470,7 +482,11 @@ void displayTicket();
 void modifyTicket();
 void saveToFileTicket();
 void loadFromFileTicket();
-// function for datetime
+// FINDING
+Passenger *findPassenger();
+Flight *findFlight(string id);
+Ticket *findTicket();
+Plane *findPlane(string id);
 
 // function for menu
 void showMainMenu();
@@ -489,10 +505,15 @@ int main()
     loadFromFileFlight();
     passengerInfoTree.root = NULL;
     loadFromFilePassenger();
+    numTickets = 0;
     loadFromFileTicket();
     // // menu
     showMainMenu();
     // addFlight();
+    saveToFileFlight();
+    saveToFilePlane();
+    saveToFilePassenger();
+    saveToFileTicket();
     return 0;
 }
 // function for menu
@@ -630,6 +651,45 @@ void showPassengerMenu()
 }
 void showTicketMenu()
 {
+    int choice;
+    do
+    {
+        cout << "1. Add Ticket" << endl;
+        cout << "2. Delete Ticket" << endl;
+        cout << "3. Modify Ticket" << endl;
+        cout << "4. Display Ticket" << endl;
+        cout << "5. Save to File" << endl;
+        cout << "6. Load from File" << endl;
+        cout << "7. Back" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            addTicket();
+            break;
+        case 2:
+            deleteTicket();
+            break;
+        case 3:
+            modifyTicket();
+            break;
+        case 4:
+            displayTicket();
+            break;
+        case 5:
+            saveToFileTicket();
+            break;
+        case 6:
+            loadFromFileTicket();
+            break;
+        case 7:
+            return;
+        default:
+            cout << "Invalid choice!" << endl;
+            break;
+        }
+    } while (choice != 7); // end of do-while
 }
 void showMainMenu()
 {
@@ -1003,4 +1063,95 @@ void modifyPassenger()
     cin >> pas->lastName;
     cout << "Enter new gender: ";
     cin >> pas->gender;
+}
+
+void addTicket()
+{
+    cout << "passengerId: ";
+    string pasId;
+    cin >> pasId;
+    Passenger *pas = passengerInfoTree.find(pasId);
+    if (pas == NULL)
+    {
+        string firstname;
+        string lastname;
+        string gender;
+        cout << "Enter firstname: ";
+        cin >> firstname;
+        cout << "Enter lastname: ";
+        cin >> lastname;
+        cout << "Enter gender: ";
+        cin >> gender;
+
+        pas = new Passenger(pasId, firstname, lastname, gender);
+        passengerInfoTree.add(pas);
+    }
+    cout << "flightNumber:";
+    string flightNumber;
+    cin >> flightNumber;
+    Flight *flight = findFlight(flightNumber);
+    if (flight == NULL)
+    {
+        cout << "Flight not found" << endl;
+        return;
+    }
+
+    int seatNumber;
+
+    while (true)
+    {
+        cout << "seatNumber:";
+        cin >> seatNumber;
+        if (seatNumber < 0 || seatNumber > flight->plane->capacity)
+        {
+            cout << "Invalid seat number" << endl;
+            continue;
+        }
+        if (flight->tickets[seatNumber] != NULL)
+        {
+            cout << "Seat is not empty" << endl;
+            continue;
+        }
+        break;
+    }
+
+    Ticket *ticket = new Ticket(seatNumber, pas, flight);
+
+    tickets[numTickets] = ticket;
+    numTickets++;
+
+    flight->tickets[seatNumber] = ticket;
+
+    pas->tickets[pas->numTickets] = ticket;
+    pas->numTickets++;
+}
+void deleteTicket()
+{
+}
+void displayTicket() {}
+void modifyTicket() {}
+void saveToFileTicket() {}
+void loadFromFileTicket() {}
+
+Flight *findFlight(string flightNumber)
+{
+    for (int i = 0; i < numFlights; i++)
+    {
+        if (flights[i]->flight_number == flightNumber)
+        {
+            return flights[i];
+        }
+    }
+    return NULL;
+}
+Plane *findPlane(string id)
+{
+    for (int i = 0; i < numPlanes; i++)
+    {
+        if (planes[i]->id == id)
+        {
+            return planes[i];
+        }
+    }
+    return NULL;
 }
