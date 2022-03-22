@@ -476,6 +476,59 @@ struct myBST
         }
     }
 };
+
+const int monthDays[12] = {31, 28, 31, 30, 31, 30,
+                           31, 31, 30, 31, 30, 31};
+
+// This function counts number of
+// leap years before the given date
+int countLeapYears(DateTime *d)
+{
+    int years = d->year;
+
+    // Check if the current year needs to be
+    //  considered for the count of leap years
+    // or not
+    if (d->month <= 2)
+        years--;
+
+    // An year is a leap year if it
+    // is a multiple of 4,
+    // multiple of 400 and not a
+    // multiple of 100.
+    return years / 4 - years / 100 + years / 400;
+}
+
+// This function returns number of
+// days between two given dates
+int getDifferenceMinus(DateTime *dt1, DateTime *dt2)
+{
+    // COUNT TOTAL NUMBER OF DAYS
+    // BEFORE FIRST DATE 'dt1'
+
+    // initialize count using years and day
+    long int n1 = dt1->year * 365 + dt1->day;
+
+    // Add days for months in given date
+    for (int i = 0; i < dt1->month - 1; i++)
+        n1 += monthDays[i];
+
+    // Since every leap year is of 366 days,
+    // Add a day for every leap year
+    n1 += countLeapYears(dt1);
+
+    // SIMILARLY, COUNT TOTAL NUMBER OF
+    // DAYS BEFORE 'dt2'
+
+    long int n2 = dt2->year * 365 + dt2->day;
+    for (int i = 0; i < dt2->month - 1; i++)
+        n2 += monthDays[i];
+    n2 += countLeapYears(dt2);
+
+    // return difference between two counts
+    return ((n2 - n1) * 24 + dt2->hour - dt1->hour) * 60 + dt2->minus - dt1->minus;
+}
+
 // global variables
 
 Plane *planes[MAX_SIZE]; // array of pointers to planes
@@ -509,6 +562,7 @@ void modifyPlane();
 void displayPlane();
 void saveToFilePlane();
 void loadFromFilePlane();
+void sortPlanesByNumberOfFlights();
 // function for flight
 void addFlight();
 void deleteFlight();
@@ -574,6 +628,7 @@ void displayAirport()
     }
     cout << endl;
 }
+void gabageCollector();
 // body
 int main()
 {
@@ -595,6 +650,8 @@ int main()
     saveToFilePlane();
     saveToFilePassenger();
     saveToFileTicket();
+
+    gabageCollector();
     return 0;
 }
 // function for menu
@@ -852,13 +909,32 @@ void addPlane()
     planes[numPlanes] = new Plane(id, type, capacity);
     numPlanes++;
 }
+
+void sortPlanesByNumberOfFlights()
+{
+    for (int i = 0; i < numPlanes - 1; i++)
+    {
+        for (int j = i + 1; j < numPlanes; j++)
+        {
+            if (planes[i]->numFlights < planes[j]->numFlights)
+            {
+                Plane *temp = planes[i];
+                planes[i] = planes[j];
+                planes[j] = temp;
+            }
+        }
+    }
+}
 void displayPlane()
 {
+    // sort planes by number of flights
+    sortPlanesByNumberOfFlights();
     cout << "Plane list: " << endl;
-    cout << left << setw(planesIdWidth) << "ID" << setw(planesTypeWidth) << "Type" << setw(planesCapacityWidth) << "Capacity" << endl;
+    cout << left << setw(planesIdWidth) << "ID" << setw(planesTypeWidth) << "Type" << setw(planesCapacityWidth) << "Capacity"
+         << "Num of flights" << endl;
     for (int i = 0; i < numPlanes; i++)
     {
-        cout << left << setw(planesIdWidth) << planes[i]->id << setw(planesTypeWidth) << planes[i]->type << setw(planesCapacityWidth) << planes[i]->capacity << endl;
+        cout << left << setw(planesIdWidth) << planes[i]->id << setw(planesTypeWidth) << planes[i]->type << setw(planesCapacityWidth) << planes[i]->capacity << planes[i]->numFlights << endl;
     }
 }
 void deletePlane()
@@ -978,7 +1054,7 @@ void addFlight()
     cout << "Enter minute: ";
     cin >> f->departureTime->minus;
     cout << "Choose arrival airport: (1 -> 22)" << endl;
-    ;
+
     displayAirport();
     cout << "Enter airport id: ";
     int airportId;
@@ -997,6 +1073,14 @@ void addFlight()
     {
         if (planes[i]->id == planeId)
         {
+            // check if plane is available
+            for (int k = 0; k < numFlights; k++)
+                if (planes[i]->flights[k] != NULL)
+                    if (abs(getDifferenceMinus(f->departureTime, planes[i]->flights[k]->departureTime)) < 240)
+                    {
+                        cout << "Plane is not available!" << endl;
+                        return;
+                    }
             f->plane = planes[i];
             planes[i]->flights[planes[i]->numFlights] = f;
             planes[i]->numFlights++;
@@ -1431,6 +1515,8 @@ void loadFromFileTicket()
             // fin >> seatNumber;
             string pasId;
             fin >> pasId;
+            if (fin.eof())
+                break;
             string flightNumber;
             fin >> flightNumber;
             Passenger *pas = passengerInfoTree.find(pasId);
@@ -1583,5 +1669,25 @@ void displayTicketByPassenger(std::string id)
              << left << setw(10) << pas->tickets[i]->id
              << left << setw(flightsArrivalAirportWidth) << pas->tickets[i]->flight->arrivalAirport
              << left << setw(flightsDepartureTimeWidth) << pas->tickets[i]->flight->departureTime->toString() << endl;
+    }
+}
+
+void gabageCollector()
+{
+    for (int i = 0; i < numFlights; i++)
+    {
+        delete flights[i];
+    }
+    for (int i = 0; i < numPlanes; i++)
+    {
+        delete planes[i];
+    }
+    // for (int i = 0; i < numPassengers; i++)
+    // {
+        // delete passengers[i];
+    // }
+    for (int i = 0; i < numTickets; i++)
+    {
+        delete tickets[i];
     }
 }
