@@ -1127,11 +1127,141 @@ void addTicket()
 }
 void deleteTicket()
 {
+    cout << "Input passengerId: ";
+    string pasId;
+    cin >> pasId;
+    Passenger *pas = passengerInfoTree.find(pasId);
+    if (pas == NULL)
+    {
+        cout << "Passenger not found" << endl;
+        return;
+    }
+    cout << "List ticket: " << endl;
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        cout << pas->tickets[i]->flight->flight_number << " " << pas->tickets[i]->id << endl;
+    }
+    cout << "Input ticketId: ";
+    int ticketId;
+    cin >> ticketId;
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        if (pas->tickets[i]->id == ticketId)
+        {
+            pas->tickets[i]->flight->tickets[pas->tickets[i]->id] = NULL;
+            // delete pas->tickets[i];
+            delete pas->tickets[i];
+            pas->tickets[i] = NULL;
+
+            pas->tickets[i] = pas->tickets[pas->numTickets - 1];
+            pas->tickets[pas->numTickets - 1] = NULL;
+            pas->numTickets--;
+            break;
+        }
+    }
 }
-void displayTicket() {}
-void modifyTicket() {}
-void saveToFileTicket() {}
-void loadFromFileTicket() {}
+void displayTicket()
+{
+    cout << "Input passengerId: ";
+    string pasId;
+    cin >> pasId;
+    Passenger *pas = passengerInfoTree.find(pasId);
+    if (pas == NULL)
+    {
+        cout << "Passenger not found" << endl;
+        return;
+    }
+    cout << "List ticket: " << endl;
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        cout << pas->tickets[i]->flight->flight_number << " " << pas->tickets[i]->id << endl;
+    }
+}
+void modifyTicket()
+{
+    cout << "Input passengerId: ";
+    string pasId;
+    cin >> pasId;
+    Passenger *pas = passengerInfoTree.find(pasId);
+    if (pas == NULL)
+    {
+        cout << "Passenger not found" << endl;
+        return;
+    }
+    cout << "List ticket: " << endl;
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        cout << pas->tickets[i]->flight->flight_number << " " << pas->tickets[i]->id << endl;
+    }
+    cout << "Input ticketId: ";
+    int ticketId;
+    cin >> ticketId;
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        if (pas->tickets[i]->id == ticketId)
+        {
+            cout << "Enter new seatNumber: ";
+            int seatNumber;
+            cin >> seatNumber;
+            pas->tickets[i]->id = seatNumber;
+            break;
+        }
+    }
+}
+void saveToFileTicket()
+{
+    ofstream fout("ticket.txt");
+    if (fout.is_open())
+    {
+        for (int i = 0; i < numTickets; i++)
+        {
+            fout << tickets[i]->id << endl;
+            // fout << tickets[i]->seatNumber << endl;
+            fout << tickets[i]->passenger->id << endl;
+            fout << tickets[i]->flight->flight_number << endl;
+        }
+        fout.close();
+    }
+}
+void loadFromFileTicket()
+{
+    ifstream fin("ticket.txt");
+    if (fin.is_open())
+    {
+        while (!fin.eof())
+        {
+            int id;
+            fin >> id;
+            // int seatNumber;
+            // fin >> seatNumber;
+            string pasId;
+            fin >> pasId;
+            string flightNumber;
+            fin >> flightNumber;
+            Passenger *pas = passengerInfoTree.find(pasId);
+            if (pas == NULL)
+            {
+                cout << "Passenger not found" << endl;
+                return;
+            }
+            Flight *flight = findFlight(flightNumber);
+            if (flight == NULL)
+            {
+                cout << "Flight not found" << endl;
+                return;
+            }
+            Ticket *ticket = new Ticket(id, pas, flight);
+            tickets[numTickets] = ticket;
+            numTickets++;
+
+            flight->tickets[id] = ticket;
+
+            pas->tickets[pas->numTickets] = ticket;
+            pas->numTickets++;
+        }
+        fin.close();
+    }
+}
 
 Flight *findFlight(string flightNumber)
 {
