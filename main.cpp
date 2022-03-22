@@ -538,6 +538,8 @@ Passenger *findPassenger();
 Flight *findFlight(string id);
 Ticket *findTicket();
 Plane *findPlane(string id);
+void searchFlightByFlightNumber();
+void searchFlightByDepartureTime();
 
 // function for menu
 void showMainMenu();
@@ -545,7 +547,7 @@ void showPlaneMenu();
 void showFlightMenu();
 void showPassengerMenu();
 void showTicketMenu();
-
+void showSearchMenu();
 // load airport
 void loadAirport()
 {
@@ -763,6 +765,7 @@ void showMainMenu()
         cout << "1. Update list of planes." << endl;
         cout << "2. Update flights." << endl;
         cout << "3. Book/Cancle/Change tickets." << endl;
+        cout << "4. Search flights." << endl;
         cout << "0. Save and exit" << endl;
         cout << "------------------" << endl
              << endl;
@@ -779,6 +782,9 @@ void showMainMenu()
         case 3:
             showTicketMenu();
             break;
+        case 4:
+            showSearchMenu();
+            break;
         case 0:
             return;
         default:
@@ -788,6 +794,36 @@ void showMainMenu()
         }
     } while (choice != 5);
     showMainMenu();
+}
+void showSearchMenu()
+{
+    int choice;
+    do
+    {
+        cout << "------------------" << endl;
+        cout << "1. Search by flight number." << endl;
+        cout << "2. Search by date." << endl;
+        cout << "0. Back to main menu." << endl;
+        cout << "------------------" << endl
+             << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            searchFlightByFlightNumber();
+            break;
+        case 2:
+            searchFlightByDepartureTime();
+            break;
+        case 0:
+            return;
+        default:
+            cout << "Invalid choice!" << endl;
+            cin.ignore();
+            break;
+        }
+    } while (choice != 0);
 }
 
 void addPlane()
@@ -1444,7 +1480,88 @@ Plane *findPlane(string id)
     }
     return NULL;
 }
+void searchFlightByFlightNumber()
+{
+    cout << "Input flight number: ";
+    string flightNumber;
+    cin >> flightNumber;
 
+    Flight *flight = findFlight(flightNumber);
+    if (flight == NULL)
+    {
+        cout << "Flight not found" << endl;
+        return;
+    }
+    cout << "This is the flight information of flight number " << flight->flightId << endl;
+    cout << "Date and time: " << flight->departureTime->toString() << endl;
+    cout << "Arrival airport: " << flight->arrivalAirport << endl;
+    // display list of passengers
+    cout << left << setw(6) << "Index"
+         << left << setw(6) << "Seat"
+         << left << setw(15) << "PassengerID"
+         << left << setw(30) << "PassengerName"
+         << left << setw(10) << "Gender" << endl;
+    int counter = 0;
+    for (int i = 0; i < flight->plane->capacity; i++)
+    {
+        if (flight->tickets[i] != NULL)
+        {
+            counter++;
+            cout << left << setw(6) << counter
+                 << left << setw(6) << flight->tickets[i]->id
+                 << left << setw(15) << flight->tickets[i]->passenger->id
+                 << left << setw(30) << (flight->tickets[i]->passenger->lastName + " " + flight->tickets[i]->passenger->firstName)
+                 << left << setw(10) << flight->tickets[i]->passenger->gender << endl;
+        }
+    }
+}
+
+int calculateSeatAvailible(Flight *f)
+{
+    if (f == NULL)
+        return 0;
+    int sum, res;
+    sum = res = f->plane->capacity;
+    for (int i = 0; i < sum; i++)
+    {
+        if (f->tickets[i] != NULL)
+            res--;
+    }
+    return res;
+}
+void searchFlightByDepartureTime()
+{
+    // intput date
+    int year, month, day;
+    cout << "Search for date:\n";
+    cout << "year: ";
+    cin >> year;
+    cout << "month: ";
+    cin >> month;
+    cout << "day: ";
+    cin >> day;
+
+    vector<Flight *> flightsSet;
+    for (int i = 0; i < numFlights; i++)
+    {
+        if (flights[i]->departureTime->year == year && flights[i]->departureTime->month == month && flights[i]->departureTime->day == day)
+        {
+            flightsSet.push_back(flights[i]);
+        }
+    }
+    if (flightsSet.size() == 0)
+    {
+        cout << "No flight found" << endl;
+        return;
+    }
+    cout << "Flight found: " << flightsSet.size() << endl;
+    cout << left << setw(flightsIdWidth) << "Flight id" << setw(flightsDepartureTimeWidth) << "Departure time" << setw(flightsArrivalAirportWidth) << "Arrival" << setw(flightsPlaneIdWidth) << "Plane id"
+         << "Seat available" << endl;
+    for (int i = 0; i < flightsSet.size(); i++)
+    {
+        cout << left << setw(flightsIdWidth) << flightsSet[i]->flightId << setw(flightsDepartureTimeWidth) << flightsSet[i]->departureTime->toString() << setw(flightsArrivalAirportWidth) << flightsSet[i]->arrivalAirport << setw(flightsPlaneIdWidth) << flightsSet[i]->plane->id << calculateSeatAvailible(flightsSet[i]) << endl;
+    }
+}
 void displayTicketByPassenger(std::string id)
 {
     Passenger *pas = passengerInfoTree.find(id);
