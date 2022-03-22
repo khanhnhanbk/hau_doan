@@ -12,8 +12,8 @@ struct DateTime;
 struct Ticket;
 struct Flight
 {
-    string flight_number;
-    DateTime *departure_time;
+    string flightId;
+    DateTime *departureTime;
     string arrivalAirport;
     Plane *plane;
 
@@ -529,6 +529,7 @@ void loadFromFilePassenger();
 void addTicket();
 void deleteTicket();
 void displayTicket();
+void displayTicketByPassenger(string id);
 void modifyTicket();
 void saveToFileTicket();
 void loadFromFileTicket();
@@ -628,6 +629,7 @@ void showPlaneMenu()
             return;
         default:
             cout << "Invalid choice!" << endl;
+            cin.ignore();
             break;
         }
     } while (choice != 0);
@@ -665,6 +667,7 @@ void showFlightMenu()
             return;
         default:
             cout << "Invalid choice!" << endl;
+            cin.ignore();
             break;
         }
     } while (choice != 0);
@@ -707,6 +710,7 @@ void showPassengerMenu()
             return;
         default:
             cout << "Invalid choice!" << endl;
+            cin.ignore();
             break;
         }
     } while (choice != 7); // end of do-while
@@ -716,13 +720,15 @@ void showTicketMenu()
     int choice;
     do
     {
-        cout << "1. Add Ticket" << endl;
-        cout << "2. Delete Ticket" << endl;
-        cout << "3. Modify Ticket" << endl;
-        cout << "4. Display Ticket" << endl;
-        cout << "5. Save to File" << endl;
-        cout << "6. Load from File" << endl;
-        cout << "7. Back" << endl;
+        cout << "------------------" << endl;
+        cout << "1. Book new ticket" << endl;
+        cout << "2. Cancle ticket" << endl;
+        cout << "3. Change ticket" << endl;
+        cout << "4. Display tickets" << endl;
+        cout << "0. Back to main menu" << endl;
+        cout << "------------------" << endl
+             << endl;
+
         cout << "Enter your choice: ";
         cin >> choice;
         switch (choice)
@@ -739,19 +745,14 @@ void showTicketMenu()
         case 4:
             displayTicket();
             break;
-        case 5:
-            saveToFileTicket();
-            break;
-        case 6:
-            loadFromFileTicket();
-            break;
-        case 7:
+        case 0:
             return;
         default:
             cout << "Invalid choice!" << endl;
+            cin.ignore();
             break;
         }
-    } while (choice != 7); // end of do-while
+    } while (choice != 0); // end of do-while
 }
 void showMainMenu()
 {
@@ -761,8 +762,7 @@ void showMainMenu()
         cout << "------------------" << endl;
         cout << "1. Update list of planes." << endl;
         cout << "2. Update flights." << endl;
-        cout << "3. Passenger" << endl;
-        cout << "4. Ticket" << endl;
+        cout << "3. Book/Cancle/Change tickets." << endl;
         cout << "0. Save and exit" << endl;
         cout << "------------------" << endl
              << endl;
@@ -777,15 +777,13 @@ void showMainMenu()
             showFlightMenu();
             break;
         case 3:
-            showPassengerMenu();
-            break;
-        case 4:
             showTicketMenu();
             break;
         case 0:
             return;
         default:
             cout << "Invalid choice!" << endl;
+            cin.ignore();
             break;
         }
     } while (choice != 5);
@@ -913,13 +911,13 @@ void modifyPlane()
 void addFlight()
 {
     Flight *f = new Flight();
-    f->departure_time = new DateTime();
+    f->departureTime = new DateTime();
     string planeId;
     cout << "Enter flight number: ";
-    cin >> f->flight_number;
+    cin >> f->flightId;
     // check if flight number already exists
     {
-        Flight *flight = findFlight(f->flight_number);
+        Flight *flight = findFlight(f->flightId);
         if (flight != NULL)
         {
             cout << "Flight already exists!" << endl;
@@ -928,21 +926,21 @@ void addFlight()
     }
     cout << "Enter departure time:\n";
     cout << "Enter year: ";
-    cin >> f->departure_time->year;
+    cin >> f->departureTime->year;
     cout << "Enter month: ";
-    cin >> f->departure_time->month;
+    cin >> f->departureTime->month;
     cout << "Enter day: ";
-    cin >> f->departure_time->day;
+    cin >> f->departureTime->day;
     // check is valid date
-    if (!f->departure_time->isValidDate())
+    if (!f->departureTime->isValidDate())
     {
         cout << "Invalid date!" << endl;
         return;
     }
     cout << "Enter hour: ";
-    cin >> f->departure_time->hour;
+    cin >> f->departureTime->hour;
     cout << "Enter minute: ";
-    cin >> f->departure_time->minus;
+    cin >> f->departureTime->minus;
     cout << "Choose arrival airport: (1 -> 22)" << endl;
     ;
     displayAirport();
@@ -986,19 +984,19 @@ void modifyFlight()
     // edit time
     for (int i = 0; i < numFlights; i++)
     {
-        if (flights[i]->flight_number == flightNumber)
+        if (flights[i]->flightId == flightNumber)
         {
             cout << "Enter new departure time:\n";
             cout << "Enter year: ";
-            cin >> flights[i]->departure_time->year;
+            cin >> flights[i]->departureTime->year;
             cout << "Enter month: ";
-            cin >> flights[i]->departure_time->month;
+            cin >> flights[i]->departureTime->month;
             cout << "Enter day: ";
-            cin >> flights[i]->departure_time->day;
+            cin >> flights[i]->departureTime->day;
             cout << "Enter hour: ";
-            cin >> flights[i]->departure_time->hour;
+            cin >> flights[i]->departureTime->hour;
             cout << "Enter minute: ";
-            cin >> flights[i]->departure_time->minus;
+            cin >> flights[i]->departureTime->minus;
             return;
         }
     }
@@ -1011,7 +1009,7 @@ void deleteFlight()
     cin >> flightNumber;
     for (int i = 0; i < numFlights; i++)
     {
-        if (flights[i]->flight_number == flightNumber)
+        if (flights[i]->flightId == flightNumber)
         {
             delete flights[i];
             for (int j = i; j < numFlights - 1; j++)
@@ -1030,7 +1028,7 @@ void displayFlight()
     cout << left << setw(flightsIdWidth) << "Flight id" << setw(flightsDepartureTimeWidth) << "Departure time" << setw(flightsArrivalAirportWidth) << "Arrival" << setw(flightsPlaneIdWidth) << "Plane id" << endl;
     for (int i = 0; i < numFlights; i++)
     {
-        cout << left << setw(flightsIdWidth) << flights[i]->flight_number << setw(flightsDepartureTimeWidth) << flights[i]->departure_time->toString() << setw(flightsArrivalAirportWidth) << flights[i]->arrivalAirport << setw(flightsPlaneIdWidth) << flights[i]->plane->id << endl;
+        cout << left << setw(flightsIdWidth) << flights[i]->flightId << setw(flightsDepartureTimeWidth) << flights[i]->departureTime->toString() << setw(flightsArrivalAirportWidth) << flights[i]->arrivalAirport << setw(flightsPlaneIdWidth) << flights[i]->plane->id << endl;
     }
 }
 void saveToFileFlight()
@@ -1039,22 +1037,22 @@ void saveToFileFlight()
     fout.open("flight.txt");
     for (int i = 0; i < numFlights - 1; i++)
     {
-        fout << flights[i]->flight_number << endl;
-        fout << flights[i]->departure_time->year << endl;
-        fout << flights[i]->departure_time->month << endl;
-        fout << flights[i]->departure_time->day << endl;
-        fout << flights[i]->departure_time->hour << endl;
-        fout << flights[i]->departure_time->minus << endl;
+        fout << flights[i]->flightId << endl;
+        fout << flights[i]->departureTime->year << endl;
+        fout << flights[i]->departureTime->month << endl;
+        fout << flights[i]->departureTime->day << endl;
+        fout << flights[i]->departureTime->hour << endl;
+        fout << flights[i]->departureTime->minus << endl;
         fout << flights[i]->arrivalAirport << endl;
         fout << flights[i]->plane->id << endl;
     }
     // save last flight
-    fout << flights[numFlights - 1]->flight_number << endl;
-    fout << flights[numFlights - 1]->departure_time->year << endl;
-    fout << flights[numFlights - 1]->departure_time->month << endl;
-    fout << flights[numFlights - 1]->departure_time->day << endl;
-    fout << flights[numFlights - 1]->departure_time->hour << endl;
-    fout << flights[numFlights - 1]->departure_time->minus << endl;
+    fout << flights[numFlights - 1]->flightId << endl;
+    fout << flights[numFlights - 1]->departureTime->year << endl;
+    fout << flights[numFlights - 1]->departureTime->month << endl;
+    fout << flights[numFlights - 1]->departureTime->day << endl;
+    fout << flights[numFlights - 1]->departureTime->hour << endl;
+    fout << flights[numFlights - 1]->departureTime->minus << endl;
     fout << flights[numFlights - 1]->arrivalAirport << endl;
     fout << flights[numFlights - 1]->plane->id;
     fout.close();
@@ -1067,14 +1065,14 @@ void loadFromFileFlight()
         while (!fin.eof())
         {
             Flight *f = new Flight();
-            f->departure_time = new DateTime();
+            f->departureTime = new DateTime();
             string planeId;
-            fin >> f->flight_number;
-            fin >> f->departure_time->year;
-            fin >> f->departure_time->month;
-            fin >> f->departure_time->day;
-            fin >> f->departure_time->hour;
-            fin >> f->departure_time->minus;
+            fin >> f->flightId;
+            fin >> f->departureTime->year;
+            fin >> f->departureTime->month;
+            fin >> f->departureTime->day;
+            fin >> f->departureTime->hour;
+            fin >> f->departureTime->minus;
             fin >> f->arrivalAirport;
             fin >> planeId;
             for (int i = 0; i < numPlanes; i++)
@@ -1174,12 +1172,13 @@ void modifyPassenger()
 
 void addTicket()
 {
-    cout << "passengerId: ";
+    cout << "Enter you ID (CMND): ";
     string pasId;
     cin >> pasId;
     Passenger *pas = passengerInfoTree.find(pasId);
     if (pas == NULL)
     {
+        cout << "Please enter you infomation" << endl;
         string firstname;
         string lastname;
         string gender;
@@ -1193,18 +1192,43 @@ void addTicket()
         pas = new Passenger(pasId, firstname, lastname, gender);
         passengerInfoTree.add(pas);
     }
-    cout << "flightNumber:";
-    string flightNumber;
-    cin >> flightNumber;
-    Flight *flight = findFlight(flightNumber);
-    if (flight == NULL)
+    else
     {
-        cout << "Flight not found" << endl;
+        cout << "Welcome " << pas->firstName << endl;
+    }
+    // choose airport
+    displayAirport();
+    cout << "Choose airport you want to arrive (1 -> 22)" << endl;
+    int airportId;
+    cin >> airportId;
+    string airportName = airports[airportId - 1];
+    // choose flight
+    // set of flights
+    vector<Flight *> flightsSet;
+    for (int i = 0; i < numFlights; i++)
+    {
+        if (flights[i]->arrivalAirport == airportName)
+        {
+            flightsSet.push_back(flights[i]);
+        }
+    }
+    if (flightsSet.size() == 0)
+    {
+        cout << "No flight available" << endl;
         return;
     }
-
+    // display flights
+    for (int i = 0; i < flightsSet.size(); i++)
+    {
+        cout << i + 1 << ". " << flightsSet[i]->flightId << endl;
+    }
+    cout << "Choose flight you want to buy (1 -> " << flightsSet.size() << ")" << endl;
+    int flightId;
+    cin >> flightId;
+    Flight *flight = flightsSet[flightId - 1];
+    // choose seat
+    cout << "Choose seat you want to buy (1 -> " << flight->plane->capacity << ")" << endl;
     int seatNumber;
-
     while (true)
     {
         cout << "seatNumber:";
@@ -1243,46 +1267,51 @@ void deleteTicket()
         cout << "Passenger not found" << endl;
         return;
     }
-    cout << "List ticket: " << endl;
+    cout << left << setw(10) << "Index"
+         << left << setw(10) << "FlightID"
+         << left << setw(10) << "Seat"
+         << left << setw(flightsArrivalAirportWidth) << "ArrivalAirport"
+         << left << setw(flightsDepartureTimeWidth) << "DepartureTime" << endl;
     for (int i = 0; i < pas->numTickets; i++)
     {
-        cout << pas->tickets[i]->flight->flight_number << " " << pas->tickets[i]->id << endl;
+        cout << left << setw(10) << i + 1
+             << left << setw(10) << pas->tickets[i]->flight->flightId
+             << left << setw(10) << pas->tickets[i]->id
+             << left << setw(flightsArrivalAirportWidth) << pas->tickets[i]->flight->arrivalAirport
+             << left << setw(flightsDepartureTimeWidth) << pas->tickets[i]->flight->departureTime->toString() << endl;
     }
-    cout << "Input ticketId: ";
+    cout << "Input ticket index: ";
     int ticketId;
     cin >> ticketId;
-    for (int i = 0; i < pas->numTickets; i++)
+    if (ticketId < 0 || ticketId > pas->numTickets)
     {
-        if (pas->tickets[i]->id == ticketId)
-        {
-            pas->tickets[i]->flight->tickets[pas->tickets[i]->id] = NULL;
-            // delete pas->tickets[i];
-            delete pas->tickets[i];
-            pas->tickets[i] = NULL;
+        cout << "Invalid ticket index" << endl;
+        return;
+    }
+    Ticket *ticket = pas->tickets[ticketId - 1];
 
-            pas->tickets[i] = pas->tickets[pas->numTickets - 1];
-            pas->tickets[pas->numTickets - 1] = NULL;
-            pas->numTickets--;
+    // delete ticket
+    pas->tickets[ticketId - 1] = pas->tickets[pas->numTickets - 1];
+    pas->numTickets--;
+    // delete flight
+    ticket->flight->tickets[ticket->id] = NULL;
+    // delete ticket in ticket array
+    for (int i = 0; i < numTickets; i++)
+    {
+        if (tickets[i] == ticket)
+        {
+            tickets[i] = tickets[numTickets - 1];
             break;
         }
     }
+    numTickets--;
 }
 void displayTicket()
 {
     cout << "Input passengerId: ";
     string pasId;
     cin >> pasId;
-    Passenger *pas = passengerInfoTree.find(pasId);
-    if (pas == NULL)
-    {
-        cout << "Passenger not found" << endl;
-        return;
-    }
-    cout << "List ticket: " << endl;
-    for (int i = 0; i < pas->numTickets; i++)
-    {
-        cout << pas->tickets[i]->flight->flight_number << " " << pas->tickets[i]->id << endl;
-    }
+    displayTicketByPassenger(pasId);
 }
 void modifyTicket()
 {
@@ -1295,25 +1324,48 @@ void modifyTicket()
         cout << "Passenger not found" << endl;
         return;
     }
-    cout << "List ticket: " << endl;
+    cout << left << setw(10) << "Index"
+         << left << setw(10) << "FlightID"
+         << left << setw(10) << "Seat"
+         << left << setw(flightsArrivalAirportWidth) << "ArrivalAirport"
+         << left << setw(flightsDepartureTimeWidth) << "DepartureTime" << endl;
     for (int i = 0; i < pas->numTickets; i++)
     {
-        cout << pas->tickets[i]->flight->flight_number << " " << pas->tickets[i]->id << endl;
+        cout << left << setw(10) << i + 1
+             << left << setw(10) << pas->tickets[i]->flight->flightId
+             << left << setw(10) << pas->tickets[i]->id
+             << left << setw(flightsArrivalAirportWidth) << pas->tickets[i]->flight->arrivalAirport
+             << left << setw(flightsDepartureTimeWidth) << pas->tickets[i]->flight->departureTime->toString() << endl;
     }
-    cout << "Input ticketId: ";
+    cout << "Input ticket index: ";
     int ticketId;
     cin >> ticketId;
-    for (int i = 0; i < pas->numTickets; i++)
+    if (ticketId < 0 || ticketId > pas->numTickets)
     {
-        if (pas->tickets[i]->id == ticketId)
-        {
-            cout << "Enter new seatNumber: ";
-            int seatNumber;
-            cin >> seatNumber;
-            pas->tickets[i]->id = seatNumber;
-            break;
-        }
+        cout << "Invalid ticket index" << endl;
+        return;
     }
+    // change seat
+    int newSeat;
+    while (true)
+    {
+        cout << "Input new seat: ";
+        cin >> newSeat;
+        if (newSeat < 0 || newSeat > pas->tickets[ticketId - 1]->flight->plane->capacity)
+        {
+            cout << "Invalid seat number" << endl;
+            continue;
+        }
+        if (pas->tickets[ticketId - 1]->flight->tickets[newSeat] != NULL)
+        {
+            cout << "Seat is not availible" << endl;
+            continue;
+        }
+        break;
+    }
+    pas->tickets[ticketId - 1]->flight->tickets[newSeat] = pas->tickets[ticketId - 1];
+    pas->tickets[ticketId - 1]->flight->tickets[pas->tickets[ticketId - 1]->id] = NULL;
+    pas->tickets[ticketId - 1]->id = newSeat;
 }
 void saveToFileTicket()
 {
@@ -1325,7 +1377,7 @@ void saveToFileTicket()
             fout << tickets[i]->id << endl;
             // fout << tickets[i]->seatNumber << endl;
             fout << tickets[i]->passenger->id << endl;
-            fout << tickets[i]->flight->flight_number << endl;
+            fout << tickets[i]->flight->flightId << endl;
         }
         fout.close();
     }
@@ -1374,7 +1426,7 @@ Flight *findFlight(string flightNumber)
 {
     for (int i = 0; i < numFlights; i++)
     {
-        if (flights[i]->flight_number == flightNumber)
+        if (flights[i]->flightId == flightNumber)
         {
             return flights[i];
         }
@@ -1391,4 +1443,28 @@ Plane *findPlane(string id)
         }
     }
     return NULL;
+}
+
+void displayTicketByPassenger(std::string id)
+{
+    Passenger *pas = passengerInfoTree.find(id);
+    if (pas == NULL)
+    {
+        cout << "Passenger not found" << endl;
+        return;
+    }
+
+    cout << left << setw(10) << "Index"
+         << left << setw(10) << "FlightID"
+         << left << setw(10) << "Seat"
+         << left << setw(flightsArrivalAirportWidth) << "ArrivalAirport"
+         << left << setw(flightsDepartureTimeWidth) << "DepartureTime" << endl;
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        cout << left << setw(10) << i + 1
+             << left << setw(10) << pas->tickets[i]->flight->flightId
+             << left << setw(10) << pas->tickets[i]->id
+             << left << setw(flightsArrivalAirportWidth) << pas->tickets[i]->flight->arrivalAirport
+             << left << setw(flightsDepartureTimeWidth) << pas->tickets[i]->flight->departureTime->toString() << endl;
+    }
 }
