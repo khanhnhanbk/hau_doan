@@ -1346,6 +1346,23 @@ void addTicket()
     int flightId;
     cin >> flightId;
     Flight *flight = flightsSet[flightId - 1];
+    // check if another ticket can conflict
+    for (int i = 0; i < pas->numTickets; i++)
+    {
+        Flight *f = pas->tickets[i]->flight;
+        if (f == NULL)
+            continue;
+        if (f == flight)
+        {
+            cout << "You already have a ticket for this flight" << endl;
+            return;
+        }
+        if (abs(getDifferenceMinus(f->departureTime, flight->departureTime)) < 240)
+        {
+            cout << "You already have another flight at the same time." << endl;
+            return;
+        }
+    }
     // choose seat
     cout << "Choose seat you want to buy (1 -> " << flight->plane->capacity << ")" << endl;
     int seatNumber;
@@ -1684,7 +1701,7 @@ void gabageCollector()
     }
     // for (int i = 0; i < numPassengers; i++)
     // {
-        // delete passengers[i];
+    // delete passengers[i];
     // }
     for (int i = 0; i < numTickets; i++)
     {
