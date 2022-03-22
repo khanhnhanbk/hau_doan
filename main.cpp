@@ -1,10 +1,5 @@
 // library
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <fstream>
+#include <bits/stdc++.h>
 using namespace std;
 
 // constants
@@ -473,6 +468,7 @@ void showPlaneMenu()
     int choice;
     do
     {
+        cout << "------------------" << endl;
         cout << "1. Add Plane" << endl;
         cout << "2. Delete Plane" << endl;
         cout << "3. Modify Plane" << endl;
@@ -480,6 +476,8 @@ void showPlaneMenu()
         cout << "5. Save to File" << endl;
         cout << "6. Load from File" << endl;
         cout << "7. Back" << endl;
+        cout << "------------------" << endl
+             << endl;
         cout << "Enter your choice: ";
         cin >> choice;
         switch (choice)
