@@ -8,10 +8,16 @@ const int MAX_SIZE = 100;
 
 // struct
 struct Plane;
-struct Flight;
+struct DateTime;
+struct Flight
+{
+    int flight_number;
+    DateTime *departure_time;
+    int arrivalAirport;
+    Plane *plane;
+};
 struct Ticket;
 struct Passenger;
-struct DateTime;
 
 // myBST for passenger info
 struct PassengerNode;
@@ -34,17 +40,6 @@ struct Plane
         this->capacity = capacity;
         numFlights = 0;
     }
-};
-
-struct FLight
-{
-    string id;
-    string arrivalAirport;
-    Plane *plane;
-    DateTime *departureTime;
-
-    Ticket *tickets[MAX_SIZE];
-    int numTickets;
 };
 
 struct Ticket
@@ -78,6 +73,12 @@ struct DateTime
     int year, month, day, hour, minus;
     DateTime()
     {
+    }
+    string toString()
+    {
+        stringstream ss;
+        ss << year << "-" << month << "-" << day << " " << hour << ":" << minus;
+        return ss.str();
     }
 };
 struct PassengerNode
@@ -426,6 +427,8 @@ void addFlight();
 void deleteFlight();
 void displayFlight();
 void modifyFlight();
+void saveToFileFlight();
+void loadFromFileFlight();
 
 // function for passenger
 void addPassenger();
@@ -440,6 +443,7 @@ void addTicket();
 void deleteTicket();
 void displayTicket();
 void modifyTicket();
+// function for datetime
 
 // function for menu
 void showMainMenu();
@@ -451,15 +455,16 @@ void showTicketMenu();
 // body
 int main()
 {
-    // initialize
+    // // initialize
     numPlanes = 0;
     loadFromFilePlane();
     numFlights = 0;
 
     passengerInfoTree.root = NULL;
     loadFromFilePassenger();
-    // menu
+    // // menu
     showMainMenu();
+    // addFlight();
     return 0;
 }
 // function for menu
@@ -508,7 +513,51 @@ void showPlaneMenu()
         }
     } while (choice != 7);
 }
-void showFlightMenu(){};
+void showFlightMenu()
+{
+    int choice;
+    do
+    {
+        cout << "------------------" << endl;
+        cout << "1. Add Flight" << endl;
+        cout << "2. Delete Flight" << endl;
+        cout << "3. Modify Flight" << endl;
+        cout << "4. Display Flight" << endl;
+        cout << "5. Save to File" << endl;
+        cout << "6. Load from File" << endl;
+        cout << "7. Back" << endl;
+        cout << "------------------" << endl
+             << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            addFlight();
+            break;
+        case 2:
+            deleteFlight();
+            break;
+        case 3:
+            modifyFlight();
+            break;
+        case 4:
+            displayFlight();
+            break;
+        case 5:
+            saveToFileFlight();
+            break;
+        case 6:
+            loadFromFileFlight();
+            break;
+        case 7:
+            return;
+        default:
+            cout << "Invalid choice!" << endl;
+            break;
+        }
+    } while (choice != 7);
+};
 void showPassengerMenu()
 {
     int choice;
@@ -693,6 +742,57 @@ void modifyPlane()
 }
 
 void addFlight()
+{
+    Flight *f = new Flight();
+    f->departure_time = new DateTime();
+    string planeId;
+    cout << "Enter flight number: ";
+    cin >> f->flight_number;
+    cout << "Enter departure time: ";
+    cout << "Enter year: ";
+    cin >> f->departure_time->year;
+    cout << "Enter month: ";
+    cin >> f->departure_time->month;
+    cout << "Enter day: ";
+    cin >> f->departure_time->day;
+    cout << "Enter hour: ";
+    cin >> f->departure_time->hour;
+    cout << "Enter minute: ";
+    cin >> f->departure_time->minus;
+    cout << "Enter arrival airport: ";
+    cin >> f->arrivalAirport;
+    cout << "Enter plane id: ";
+    cin >> planeId;
+    for (int i = 0; i < numPlanes; i++)
+    {
+        if (planes[i]->id == planeId)
+        {
+            f->plane = planes[i];
+            break;
+        }
+    }
+    flights[numFlights] = f;
+    numFlights++;
+}
+void modifyFlight()
+{
+}
+void deleteFlight()
+{
+}
+void displayFlight()
+{
+    cout << "Flight list: " << endl;
+    cout << "Flight number\tDeparture time\tArrival airport\tPlane id" << endl;
+    for (int i = 0; i < numFlights; i++)
+    {
+        cout << flights[i]->flight_number << "\t" << flights[i]->departure_time->toString() << "\t" << flights[i]->arrivalAirport << "\t" << flights[i]->plane->id << endl;
+    }
+}
+void saveToFileFlight()
+{
+}
+void loadFromFileFlight()
 {
 }
 
